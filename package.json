@@ -17,6 +17,11 @@
   ],
   "author": "Geoffroy Warin",
   "license": "MIT",
+  "bugs": "https://github.com/geowarin/redux-tk/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geowarin/redux-tk.git"
+  },
   "dependencies": {
     "lodash.get": "^4.3.0",
     "lodash.set": "^4.2.0"
