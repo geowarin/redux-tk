@@ -73,21 +73,56 @@ test('plain: should handle deep namespaces', () => {
   expect(store.getState()).toEqual({ deep: {counter: 2} });
 });
 
-test('plain: should work', () => {
+test('plain: should allow a reducer to be defined in different namespaces', () => {
 
   const counter = {
     increment: (state, action) => state + action.payload,
     decrement: (state, action) => state - action.payload
   };
   const builder = reducerBuilder.plain()
-    .obj(counter, 'count1')
-    .obj(counter, 'count2');
+    .obj(counter, 'count1', 0)
+    .obj(counter, 'count2', 42);
 
-  const initialState = { count1: 0, count2: 42 };
-  const store = createStore(builder.buildReducer(), initialState);
+  const store = createStore(builder.buildReducer());
   const actions = builder.buildActions(store.dispatch);
   actions.count1.increment(2);
   actions.count2.decrement(12);
 
   expect(store.getState()).toEqual({ count1: 2, count2: 30 });
+});
+
+test('plain: should allow a reducer object to declare an initial state', () => {
+
+  const counter = {
+    initialState: 0,
+    increment: (state, action) => state + action.payload,
+    decrement: (state, action) => state - action.payload
+  };
+  const builder = reducerBuilder.plain()
+    .obj(counter, 'count1')
+    .obj(counter, 'count2', 42)
+    .obj(counter, 'count3', -23);
+
+  const initialState = {count3: 11};
+  const store = createStore(builder.buildReducer(), initialState);
+  const actions = builder.buildActions(store.dispatch);
+  actions.count1.increment(2);
+  actions.count2.decrement(12);
+
+  expect(store.getState()).toEqual({ count1: 2, count2: 30, count3: 11 });
+});
+
+test('plain: should have a default state', () => {
+
+  const greeter = {
+    greet: (state, action) => ({...state, greeting: `Hi, ${action.payload}`})
+  };
+  const builder = reducerBuilder.plain()
+    .obj(greeter, 'greeter');
+
+  const store = createStore(builder.buildReducer());
+  const actions = builder.buildActions(store.dispatch);
+  actions.greeter.greet('Leonard');
+
+  expect(store.getState()).toEqual({ greeter: {greeting: 'Hi, Leonard' }});
 });

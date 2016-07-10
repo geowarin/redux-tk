@@ -7,5 +7,6 @@ export default {
   },
   setter(obj, path, value) {
     return set(obj, path, value)
-  }
+  },
+  initialState: () => ({})
 }

@@ -1,3 +1,4 @@
+import {Map} from 'immutable';
 
 export default {
   getter(obj, path) {
@@ -5,5 +6,6 @@ export default {
   },
   setter(obj, path, value) {
     return obj.setIn(path.split('.'), value)
-  }
+  },
+  initialState: () => Map()
 }

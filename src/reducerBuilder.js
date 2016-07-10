@@ -1,10 +1,10 @@
-import set from 'lodash.set';
+import set from "lodash.set";
 
 function buildNamespace (namespace, name) {
   return namespace ? `${namespace}.${name}` : name;
 }
 
-function getNamespace(name) {
+function getPath (name) {
   const split = name.split('.');
   return split.length > 1 ? split.slice(0, -1).join('.') : undefined;
 }
@@ -13,6 +13,7 @@ class reducerBuilder {
 
   constructor (strategy) {
     this.reducers = new Map();
+    this.initialStates = new Map();
     this.strategy = strategy;
   }
 
@@ -24,39 +25,63 @@ class reducerBuilder {
     return new reducerBuilder(require('./immutable').default);
   }
 
-  fun (reducerFunction, namespace) {
+  fun (reducerFunction, namespace, initialState = undefined) {
     if (!namespace) {
       throw new Error(`Cannot create reducer with ${namespace} namespace`);
     }
     this.reducers.set(namespace, reducerFunction);
+
+    if (initialState !== undefined) {
+      this.initialStates.set(namespace, initialState);
+    } else {
+      this.initialStates.set(namespace, this.strategy.initialState());
+    }
     return this;
   }
 
-  obj (reducerObj, namespace = undefined) {
+  obj (reducerObj, namespace = undefined, initialState = undefined) {
     Object.keys(reducerObj).forEach(name => {
-      this.fun(reducerObj[name], buildNamespace(namespace, name));
+      if (name !== 'initialState') {
+        this.reducers.set(buildNamespace(namespace, name), reducerObj[name]);
+      }
     });
+
+    if (initialState !== undefined) {
+      this.initialStates.set(namespace, initialState);
+    } else if (reducerObj.initialState !== undefined) {
+      this.initialStates.set(namespace, reducerObj.initialState);
+    } else {
+      this.initialStates.set(namespace, this.strategy.initialState());
+    }
     return this;
   }
 
   buildReducer () {
-    return (state, action) => {
+    return (state = this.strategy.initialState(), action) => {
 
       const reducer = this.reducers.get(action.type);
 
       if (reducer) {
-        const namespace = getNamespace(action.type);
+        const actionPath = getPath(action.type);
 
-        const stateForNamespace = namespace ? this.strategy.getter(state, namespace) : state;
+        const stateForNamespace = this.getInitialState(state, actionPath);
         const newState = reducer(stateForNamespace, action);
-        if (!namespace) {
+        if (!actionPath) {
           return newState;
         }
-        state = this.strategy.setter(state, namespace, newState);
+        state = this.strategy.setter(state, actionPath, newState);
       }
 
       return state;
     };
+  }
+
+  getInitialState (state, path) {
+    if (!path) {
+      return state;
+    }
+    const stateForNamespace = this.strategy.getter(state, path);
+    return stateForNamespace !== undefined ? stateForNamespace : this.initialStates.get(path);
   }
 
   buildActions (dispatch) {
