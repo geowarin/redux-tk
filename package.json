@@ -2,10 +2,11 @@
   "name": "redux-tk",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "ava",
-    "test:watch": "ava --watch"
+    "test:watch": "ava --watch",
+    "build": "babel src --out-dir lib"
   },
   "keywords": [
     "redux",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "ava": "^0.15.2",
+    "babel-cli": "^6.10.1",
     "babel-preset-es2015": "^6.9.0",
     "babel-preset-stage-2": "^6.11.0",
     "babel-register": "^6.9.0",
