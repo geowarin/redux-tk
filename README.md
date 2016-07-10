@@ -6,7 +6,7 @@ Tools to easily compose redux's reducers.
 
 ### reducerBuilder
 
-#### ReducerBuilder.fun(reducerFunction, [namespace], [initialState])
+#### ReducerBuilder.fun(reducerFunction, [namespace])
 
 Example with named reducer/action:
 
