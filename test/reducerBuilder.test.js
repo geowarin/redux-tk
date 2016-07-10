@@ -7,13 +7,32 @@ test('plain: should create reducer from function', () => {
 
   const increment = (state, action) => state + 1;
   const builder = reducerBuilder.plain()
-    .fun(increment, 'inc');
+    .fun(increment, 'increment');
 
   const store = createStore(builder.buildReducer(), 4);
   const actions = builder.buildActions(store.dispatch);
-  actions.inc();
+  actions.increment();
 
   expect(store.getState()).toEqual(5);
+});
+
+test('plain: function namespaces', () => {
+
+  const reset = state => ({counter: 0});
+  const increment = (state, action) => state + action.payload;
+  const decrement = (state, action) => state - action.payload;
+  const builder = reducerBuilder.plain()
+    .initialState('counter', 2)
+    .fun(reset, 'reset')
+    .fun(increment, 'counter.increment')
+    .fun(decrement, 'counter.decrement');
+
+  const store = createStore(builder.buildReducer());
+  const actions = builder.buildActions(store.dispatch);
+  actions.counter.increment(2);
+  actions.counter.decrement(3);
+  
+  expect(store.getState()).toEqual({counter: 1});
 });
 
 test('plain: should create reducer from objects', () => {

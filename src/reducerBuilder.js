@@ -25,16 +25,17 @@ class reducerBuilder {
     return new reducerBuilder(require('./immutable').default);
   }
 
-  fun (reducerFunction, namespace, initialState = undefined) {
-    if (!namespace) {
+  fun (reducerFunction, namespace) {
+    if (namespace == null) {
       throw new Error(`Cannot create reducer with ${namespace} namespace`);
     }
     this.reducers.set(namespace, reducerFunction);
-
+    return this;
+  }
+  
+  initialState(namespace, initialState) {
     if (initialState !== undefined) {
       this.initialStates.set(namespace, initialState);
-    } else {
-      this.initialStates.set(namespace, this.strategy.initialState());
     }
     return this;
   }
