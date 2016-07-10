@@ -1,5 +1,4 @@
-import set from "lodash.set";
-import get from "lodash.get";
+import set from 'lodash.set';
 
 function buildNamespace (namespace, name) {
   return namespace ? `${namespace}.${name}` : name;
@@ -12,12 +11,17 @@ function getNamespace(name) {
 
 class reducerBuilder {
 
-  constructor () {
+  constructor (strategy) {
     this.reducers = new Map();
+    this.strategy = strategy;
   }
 
-  static get () {
-    return new reducerBuilder();
+  static plain () {
+    return new reducerBuilder(require('./plain').default);
+  }
+
+  static immutable () {
+    return new reducerBuilder(require('./immutable').default);
   }
 
   fun (reducerFunction, namespace) {
@@ -43,12 +47,12 @@ class reducerBuilder {
       if (reducer) {
         const namespace = getNamespace(action.type);
 
-        const stateForNamespace = namespace ? get(state, namespace) : state;
+        const stateForNamespace = namespace ? this.strategy.getter(state, namespace) : state;
         const newState = reducer(stateForNamespace, action);
         if (!namespace) {
           return newState;
         }
-        set(state, namespace, newState);
+        state = this.strategy.setter(state, namespace, newState);
       }
 
       return state;
